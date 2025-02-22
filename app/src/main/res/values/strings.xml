@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">DigitalClassifier</string>
+    <string name="app_name">Digital Classifier</string>
+    <string name="back_button">Back</string>
 </resources>

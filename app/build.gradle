@@ -20,6 +20,10 @@ android {
         }
     }
 
+    aaptOptions {
+        noCompress "tflite"
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -44,6 +48,12 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+}
+
+preBuild.doFirst {
+    assert file("./src/main/assets/mnist.tflite").exists() :
+            "mnist.tflite not found. Make sure you have trained and " +
+                    "downloaded your TensorFlow Lite model to assets/ folder"
 }
 
 dependencies {

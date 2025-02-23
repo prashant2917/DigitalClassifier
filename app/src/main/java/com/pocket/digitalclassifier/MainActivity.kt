@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val viewModel = viewModel<DrawingViewModel>()
                     val state by viewModel.state.collectAsStateWithLifecycle()
+                    val digitalClassifier = DigitClassifier(this)
 
                     Column(
                         modifier = Modifier
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
                             paths = state.paths,
                             currentPath = state.currentPath,
                             onAction = viewModel::onAction,
+                            digitalClassifier,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)

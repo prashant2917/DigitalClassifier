@@ -8,7 +8,7 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.0"
 composeBom = "2025.02.00"
-tfliteVersion = "2.5.0"
+tfliteVersion = "2.15.0"
 gmsPlayServiceVersion = "17.2.1"
 
 [libraries]

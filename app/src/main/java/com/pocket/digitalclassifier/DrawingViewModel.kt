@@ -1,8 +1,12 @@
 package com.pocket.digitalclassifier
 
+import android.graphics.Bitmap
+import android.graphics.Picture
+import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import com.pocket.digitalclassifier.DigitClassifier.Companion.TAG
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -35,12 +39,24 @@ sealed interface DrawingAction {
     data object OnPathEnd : DrawingAction
     data class OnSelectColor(val color: Color) : DrawingAction
     data object OnClearCanvasClick : DrawingAction
+    data class StartPictureRecording(val picture: Picture, val width: Int, val height: Int) : DrawingAction
+    data class EndPictureRecording(val picture: Picture):DrawingAction
+    data class PredicateText(val bitmap: Bitmap, val digitClassifier: DigitClassifier):DrawingAction
 }
 
 class DrawingViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(DrawingState())
     val state = _state.asStateFlow()
+
+    private val _canvasFlow = MutableStateFlow(android.graphics.Canvas())
+    val canvasFlow = _canvasFlow.asStateFlow()
+
+    private val _bitmapFlow = MutableStateFlow(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+    val bitmapFlow = _bitmapFlow.asStateFlow()
+
+    private val _predicatedText = MutableStateFlow("")
+    val predicatedText = _predicatedText.asStateFlow()
 
     fun onAction(action: DrawingAction) {
         when (action) {
@@ -49,6 +65,10 @@ class DrawingViewModel : ViewModel() {
             DrawingAction.OnNewPathStart -> onNewPathStart()
             DrawingAction.OnPathEnd -> onPathEnd()
             is DrawingAction.OnSelectColor -> onSelectColor(action.color)
+            is DrawingAction.StartPictureRecording -> startPictureRecording(action.picture, action.width, action.height)
+            is DrawingAction.EndPictureRecording -> endPictureRecording(action.picture)
+            is DrawingAction.PredicateText -> predicateText(action.bitmap, action.digitClassifier)
+
         }
     }
 
@@ -80,6 +100,7 @@ class DrawingViewModel : ViewModel() {
                 )
             )
         }
+
     }
 
     private fun onDraw(offset: Offset) {
@@ -99,6 +120,32 @@ class DrawingViewModel : ViewModel() {
                 currentPath = null,
                 paths = emptyList()
             )
+        }
+    }
+
+    private fun startPictureRecording(picture: Picture,width: Int, height: Int) {
+         _canvasFlow.update {
+            picture.beginRecording(width, height)
+         }
+    }
+
+    private fun endPictureRecording(picture: Picture) {
+        picture.endRecording()
+    }
+
+    private fun predicateText(bitmap: Bitmap, digitClassifier: DigitClassifier) {
+        if (digitClassifier.isInitialized) {
+            digitClassifier
+                .classifyAsync(bitmap)
+                .addOnSuccessListener { resultText ->
+                    //predictedTextView?.text = resultText
+                    _predicatedText.value = resultText
+                    Log.d(TAG, "predicated text: $resultText")
+                }
+                .addOnFailureListener { e ->
+                    _predicatedText.value = e.toString()
+                    Log.e(TAG, "Error classifying drawing.", e)
+                }
         }
     }
 }

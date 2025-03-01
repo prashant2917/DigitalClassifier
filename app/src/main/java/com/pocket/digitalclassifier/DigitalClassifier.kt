@@ -144,7 +144,7 @@ class DigitClassifier(private val context: Context) {
     }
 
     companion object {
-        private const val TAG = "DigitClassifier"
+        const val TAG = "DigitClassifier"
 
         private const val FLOAT_TYPE_SIZE = 4
         private const val PIXEL_SIZE = 1
